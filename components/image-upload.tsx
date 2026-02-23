@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useId } from "react";
 
 export default function ImageUpload({
   currentUrl,
@@ -11,7 +11,7 @@ export default function ImageUpload({
 }) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentUrl ?? null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -37,14 +37,16 @@ export default function ImageUpload({
       alert("Failed to upload image. Please try again.");
     } finally {
       setUploading(false);
+      // Reset the input so the same file can be re-uploaded
+      e.target.value = "";
     }
   }
 
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-gray-700">
+      <span className="mb-1 block text-sm font-medium text-gray-700">
         Featured Image
-      </label>
+      </span>
       {preview && (
         <div className="mb-2">
           <img
@@ -54,20 +56,18 @@ export default function ImageUpload({
           />
         </div>
       )}
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        disabled={uploading}
-        className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50"
+      <label
+        htmlFor={inputId}
+        className={`inline-block cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 ${uploading ? "pointer-events-none opacity-50" : ""}`}
       >
         {uploading ? "Uploading..." : preview ? "Change Image" : "Upload Image"}
-      </button>
+      </label>
       <input
-        ref={inputRef}
+        id={inputId}
         type="file"
         accept="image/*"
         onChange={handleUpload}
-        className="hidden"
+        className="sr-only"
       />
     </div>
   );
